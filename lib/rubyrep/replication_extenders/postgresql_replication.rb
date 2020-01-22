@@ -148,9 +148,9 @@ module RR
             (SELECT oid FROM pg_namespace WHERE nspname in (#{schemas}))
         end_sql
         sequence_names.each do |sequence_name|
-          row = select_one("select last_value, increment_by from \"#{sequence_name}\"")
+          row = select_one("select last_value from \"#{sequence_name}\"")
           result[sequence_name] = {
-            :increment => row['increment_by'].to_i,
+            :increment => 1,
             :value => row['last_value'].to_i
           }
         end
@@ -175,8 +175,8 @@ module RR
           rep_prefix, table_name, increment, offset,
           left_sequence_values, right_sequence_values, adjustment_buffer)
         left_sequence_values.each do |sequence_name, left_current_value|
-          row = select_one("select last_value, increment_by from \"#{sequence_name}\"")
-          current_increment = row['increment_by'].to_i
+          row = select_one("select last_value from \"#{sequence_name}\"")
+          current_increment = 1
           current_value = row['last_value'].to_i
           unless current_increment == increment and current_value % increment == offset
             max_current_value =
@@ -226,7 +226,7 @@ module RR
         execute(<<-end_sql)
           alter table "#{table_name}" add constraint #{table_name}_#{key_name}_pkey primary key (#{key_name})
         end_sql
-        
+
       ensure
         execute "set client_min_messages = #{old_message_level}"
       end
